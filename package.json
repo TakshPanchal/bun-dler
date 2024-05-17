@@ -16,6 +16,7 @@
     "@babel/generator": "^7.24.5",
     "@babel/parser": "^7.24.5",
     "@babel/preset-env": "^7.24.5",
-    "@babel/traverse": "^7.24.5"
+    "@babel/traverse": "^7.24.5",
+    "chalk": "^5.3.0"
   }
 }
