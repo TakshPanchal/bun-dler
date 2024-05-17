@@ -1,4 +1,4 @@
-# bun-dle 📦
+# bun-dler 📦
 
 To install dependencies:
 
