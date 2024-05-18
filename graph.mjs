@@ -3,34 +3,7 @@ import traverse from "@babel/traverse";
 import * as t from "@babel/types";
 import { transformFromAstAsync } from "@babel/core";
 import { showError } from "./logging";
-
-export async function generateDependencyGraph(entryPath, rootPath) {
-  const entryAsset = await createAsset(entryPath);
-  const queue = [entryAsset];
-
-  const assets = new Map(); // mapping of asset id to asset
-  const graph = new Map(); // directed graph of dependencies
-  entryPath = resolveDependecyPath(entryPath, rootPath);
-  assets.set(entryPath, entryAsset);
-  while (queue.length != 0) {
-    const asset = queue.shift();
-    asset.depMap = new Map(); // mapping of dependency to module id
-
-    const dependencies = [];
-    for (const dep of asset.dependencies) {
-      const filePath = resolveDependecyPath(dep, rootPath);
-      dependencies.push(filePath);
-      if (!assets.has(filePath)) {
-        const childAsset = await createAsset(filePath);
-        asset.depMap.set(dep, filePath);
-        assets.set(dep, childAsset);
-        queue.push(childAsset);
-      }
-    }
-    graph.set(asset.assetPath, dependencies);
-  }
-  return [assets, graph];
-}
+import { v4 as uuidv4 } from "uuid";
 
 async function createAsset(assetPath) {
   let content;
@@ -68,10 +41,41 @@ async function createAsset(assetPath) {
   });
 
   return {
-    assetPath,
+    id: uuidv4(),
     dependencies,
     content: code,
   };
+}
+
+export async function generateDependencyGraph(entryPath, rootPath) {
+  const entryAsset = await createAsset(entryPath);
+  const queue = [entryAsset];
+
+  const assets = new Map(); // mapping of asset id to asset
+  const graph = new Map(); // directed graph of dependencies
+  entryPath = resolveDependecyPath(entryPath, rootPath);
+  assets.set(entryPath, entryAsset);
+  while (queue.length != 0) {
+    const asset = queue.shift();
+    asset.depMap = new Map(); // mapping of dependency to module id
+
+    const dependencies = [];
+    for (const dep of asset.dependencies) {
+      const filePath = resolveDependecyPath(dep, rootPath);
+      if (!assets.has(filePath)) {
+        const childAsset = await createAsset(filePath);
+        asset.depMap.set(dep, childAsset.id);
+        dependencies.push([filePath, childAsset.id]);
+        assets.set(dep, childAsset);
+        queue.push(childAsset);
+      } else {
+        const childAsset = assets.get(filePath);
+        dependencies.push([filePath, childAsset.id]);
+      }
+    }
+    graph.set(asset.id, dependencies);
+  }
+  return [assets, graph, entryAsset];
 }
 
 function resolveDependecyPath(depPath, rootPath) {
@@ -83,37 +87,44 @@ function resolveDependecyPath(depPath, rootPath) {
 }
 
 // This function takes a graph as input and returns true if there is a cycle in the graph, and false otherwise.
-export function hasCycle(graph, startPath) {
+export function hasCycle(graph, startPath, startId) {
   const visited = new Map();
   const recStack = new Map();
-  graph.forEach((_, path) => {
-    visited[path] = false;
-    recStack[path] = false;
+  graph.forEach((_, id) => {
+    visited[id] = false;
+    recStack[id] = false;
   });
 
-  return isCyclicUtil(startPath, visited, recStack, graph, startPath);
+  return isCyclicUtil(
+    [startPath, startId],
+    visited,
+    recStack,
+    graph,
+    startPath
+  );
 }
 
-function isCyclicUtil(path, visited, recStack, graph, parentPath) {
-  if (recStack.get(path)) return [true, parentPath];
-  if (visited.get(path)) return [false, undefined];
+function isCyclicUtil(node, visited, recStack, graph, parentPath) {
+  const [filePath, id] = node;
+  if (recStack.get(id)) return [true, parentPath];
+  if (visited.get(id)) return [false, undefined];
 
-  visited.set(path, true);
-  recStack.set(path, true);
+  visited.set(id, true);
+  recStack.set(id, true);
 
-  let children = graph.get(path);
+  let children = graph.get(id);
   for (let i = 0; i < children.length; i++) {
     const [isCyclic, cyclicPath] = isCyclicUtil(
       children[i],
       visited,
       recStack,
       graph,
-      path
+      filePath
     );
     if (isCyclic) return [true, cyclicPath];
   }
 
-  recStack[path] = false;
+  recStack[id] = false;
   return [false, undefined];
 }
 

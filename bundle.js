@@ -14,7 +14,7 @@
       return module.exports;
     }
     require(startPath);
-  })({"/Users/takshpanchal/dev/projects/bun-dle/test/example/main.js": [function(require,module,exports){"use strict";
+  })({"6d7f817e-1117-4597-bb30-8fdd916559fe": [function(require,module,exports){"use strict";
 
 function _typeof(o) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (o) { return typeof o; } : function (o) { return o && "function" == typeof Symbol && o.constructor === Symbol && o !== Symbol.prototype ? "symbol" : typeof o; }, _typeof(o); }
 var greet = _interopRequireWildcard(require("./greet"));
@@ -23,7 +23,7 @@ function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; 
 var computer = require("./computer");
 greet.sayHello();
 console.log(computer);
-greet.sayGoodbye();}, {"./greet":"/Users/takshpanchal/dev/projects/bun-dle/test/example/greet.js","./computer":"/Users/takshpanchal/dev/projects/bun-dle/test/example/computer.js"}],"/Users/takshpanchal/dev/projects/bun-dle/test/example/greet.js": [function(require,module,exports){"use strict";
+greet.sayGoodbye();}, {"./greet":"213fec4e-7824-49f8-8f0b-ce3dbf228c6d","./computer":"d4eb356f-5a50-4a91-baca-3485406024c8"}],"213fec4e-7824-49f8-8f0b-ce3dbf228c6d": [function(require,module,exports){"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
@@ -35,15 +35,15 @@ function sayHello() {
 }
 function sayGoodbye() {
   console.log("Goodbye, World!");
-}}, {}],"/Users/takshpanchal/dev/projects/bun-dle/test/example/computer.js": [function(require,module,exports){"use strict";
+}}, {}],"d4eb356f-5a50-4a91-baca-3485406024c8": [function(require,module,exports){"use strict";
 
-module.exports = "cpu" + " " + require("./input") + " " + require("./output")["default"];}, {"./input":"/Users/takshpanchal/dev/projects/bun-dle/test/example/input.js","./output":"/Users/takshpanchal/dev/projects/bun-dle/test/example/output.js"}],"/Users/takshpanchal/dev/projects/bun-dle/test/example/input.js": [function(require,module,exports){"use strict";
+module.exports = "cpu" + " " + require("./input") + " " + require("./output")["default"];}, {"./input":"3075ffe1-9811-444f-8f61-8ca1cf4a7067","./output":"d9db269a-23b0-4081-bbda-8e564056c05e"}],"3075ffe1-9811-444f-8f61-8ca1cf4a7067": [function(require,module,exports){"use strict";
 
-module.exports = "mouse" + " " + "keyboard";}, {}],"/Users/takshpanchal/dev/projects/bun-dle/test/example/output.js": [function(require,module,exports){"use strict";
+module.exports = "mouse" + " " + "keyboard";}, {}],"d9db269a-23b0-4081-bbda-8e564056c05e": [function(require,module,exports){"use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports["default"] = void 0;
 var monitor = "monitor";
-var _default = exports["default"] = monitor;}, {}],}, "/Users/takshpanchal/dev/projects/bun-dle/test/example/main.js");
+var _default = exports["default"] = monitor;}, {}],}, "6d7f817e-1117-4597-bb30-8fdd916559fe");
