@@ -2,6 +2,7 @@ import path from "path";
 import { hasCycle, generateDependencyGraph } from "./graph.mjs";
 import { parseArgs } from "util";
 import { showError } from "./logging";
+import chalk from "chalk";
 
 // parse arguments
 const { values } = parseArgs({
