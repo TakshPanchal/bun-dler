@@ -1,7 +1,8 @@
 import parser from "@babel/parser";
 import traverse from "@babel/traverse";
 import * as t from "@babel/types";
-import { transformFromAst, transformFromAstAsync } from "@babel/core";
+import { transformFromAstAsync } from "@babel/core";
+import { showError } from "./logging";
 
 export async function generateDependencyGraph(entryPath, rootPath) {
   const entryAsset = await createAsset(entryPath);
@@ -17,11 +18,9 @@ export async function generateDependencyGraph(entryPath, rootPath) {
 
     const dependencies = [];
     for (const dep of asset.dependencies) {
-      // TODO: Add error handling in resolving paths
       const filePath = resolveDependecyPath(dep, rootPath);
       dependencies.push(filePath);
       if (!assets.has(filePath)) {
-        // TODO: Add error handling for creating dependencies
         const childAsset = await createAsset(filePath);
         asset.depMap.set(dep, filePath);
         assets.set(dep, childAsset);
@@ -34,9 +33,12 @@ export async function generateDependencyGraph(entryPath, rootPath) {
 }
 
 async function createAsset(assetPath) {
-  // TODO: Add error handling for reading files
-
-  const content = await Bun.file(assetPath).text();
+  let content;
+  try {
+    content = await Bun.file(assetPath).text();
+  } catch (error) {
+    showError("Error reading file: \n" + assetPath);
+  }
   const ast = parser.parse(content, {
     sourceType: "module",
   });
@@ -53,7 +55,6 @@ async function createAsset(assetPath) {
     CallExpression: {
       enter(path) {
         if (t.isIdentifier(path.node.callee, { name: "require" })) {
-          // TODO: Validation for arugments
           dependencies.add(path.node.arguments[0].value);
         }
       },
@@ -74,7 +75,11 @@ async function createAsset(assetPath) {
 }
 
 function resolveDependecyPath(depPath, rootPath) {
-  return Bun.resolveSync(depPath, rootPath);
+  try {
+    return Bun.resolveSync(depPath, rootPath);
+  } catch (error) {
+    showError(error.message);
+  }
 }
 
 // This function takes a graph as input and returns true if there is a cycle in the graph, and false otherwise.
@@ -86,23 +91,30 @@ export function hasCycle(graph, startPath) {
     recStack[path] = false;
   });
 
-  return isCyclicUtil(startPath, visited, recStack, graph);
+  return isCyclicUtil(startPath, visited, recStack, graph, startPath);
 }
 
-function isCyclicUtil(path, visited, recStack, graph) {
-  if (recStack.get(path)) return true;
-  if (visited.get(path)) return false;
+function isCyclicUtil(path, visited, recStack, graph, parentPath) {
+  if (recStack.get(path)) return [true, parentPath];
+  if (visited.get(path)) return [false, undefined];
 
   visited.set(path, true);
   recStack.set(path, true);
 
   let children = graph.get(path);
   for (let i = 0; i < children.length; i++) {
-    if (isCyclicUtil(children[i], visited, recStack, graph)) return true;
+    const [isCyclic, cyclicPath] = isCyclicUtil(
+      children[i],
+      visited,
+      recStack,
+      graph,
+      path
+    );
+    if (isCyclic) return [true, cyclicPath];
   }
 
   recStack[path] = false;
-  return false;
+  return [false, undefined];
 }
 
 export default { hasCycle, generateDependencyGraph };

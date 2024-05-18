@@ -1,13 +1,7 @@
 import path from "path";
 import { hasCycle, generateDependencyGraph } from "./graph.mjs";
 import { parseArgs } from "util";
-// log setup
-import chalk from "chalk";
-const log = console.log;
-const showError = (errMsg) => {
-  log(chalk.red(errMsg));
-  process.exit(1);
-};
+import { showError } from "./logging";
 
 // parse arguments
 const { values } = parseArgs({
@@ -69,8 +63,9 @@ function createBundle(assets, entryPath) {
 
 const [assets, graph] = await generateDependencyGraph(enterPath, root);
 
-if (hasCycle(graph, enterPath)) {
-  showError("Cycle detected in the dependency graph");
+const [isGraphCyclic, cyclicPath] = hasCycle(graph, enterPath);
+if (isGraphCyclic) {
+  showError("Circular dependency detected in file: " + cyclicPath);
 }
 
 const bundle =
