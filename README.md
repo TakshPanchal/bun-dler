@@ -1,3 +1,5 @@
+![bun-dler — JavaScript module bundler](assets/banner.webp)
+
 # bun-dler 📦
 
 ## Features:
